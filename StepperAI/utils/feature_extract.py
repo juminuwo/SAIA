@@ -3,13 +3,16 @@ from pyAudioAnalysis import audioFeatureExtraction as aF
 import math
 
 class music_features():
-    def __init__(self, song):
+    def __init__(self, song, bpm_overwrite=False):
         [Fs, x] = audioBasicIO.readAudioFile(song)
 
         step = 0.050 # ms
         self.F, _ = aF.stFeatureExtraction(
             x, Fs, 0.050 * Fs, step * Fs)
-        bpm, _ = aF.beatExtraction(self.F, 0.050)
+        if bpm_overwrite:
+            bpm = bpm_overwrite
+        else:
+            bpm, _ = aF.beatExtraction(self.F, 0.050)
 
         beat = 60/bpm # how long a beat lasts
 
