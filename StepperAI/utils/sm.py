@@ -25,14 +25,6 @@ class sm():
         # get offset
         self.offset = float(self.meta_dict['#OFFSET'][:-1])
 
-        # get bpm
-        self.bpm = self.meta_dict['#BPMS'][:-1]
-        self.bpm = self.bpm.split(',')
-        if len(self.bpm) > 1:
-            self.bpm = False
-        else:
-            self.bpm = float(self.bpm[0].split('=')[1])
-
         # get indexs where chart starts/ends
         self.chart_index = self.sm[self.sm.str.contains('//')].index.tolist()
         self.chart_index.append(len(self.sm))
