@@ -22,6 +22,9 @@ class sm():
             data = me.split(':')
             self.meta_dict.update({data[0]: data[1]})
 
+        # get offset
+        self.offset = float(self.meta_dict['#OFFSET'][:-1])
+
         # get indexs where chart starts/ends
         self.chart_index = self.sm[self.sm.str.contains('//')].index.tolist()
         self.chart_index.append(len(self.sm))
