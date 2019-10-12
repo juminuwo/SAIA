@@ -1,0 +1,1 @@
+Just a collection of notes, to help set up this problem.
