@@ -71,7 +71,7 @@ class dataset():
         self.output_list = []
         for sm_file, song_file in zip(self.sm_files, self.song_files):
             d = data(sm_file, song_file)
-            for n_chart in d.s.n_charts:
+            for n_chart in range(d.s.n_charts):
                 d.generate_data(n_chart)
                 self.input_list.append(d.input_data)
                 self.output_list.append(d.output_data)
@@ -111,14 +111,6 @@ class dataset():
 
 if __name__ == '__main__':
     songs_dir = '/media/adrian/Main/Games/StepMania 5/test_packs/'
-    sm_files, song_files = get_files(songs_dir)
-    input_list = []
-    output_list = []
-    for sm_file, song_file in zip(sm_files, song_files):
-        d = data(sm_file, song_file)
-        input_list.append(d.input_data)
-        output_list.append(d.output_data)
-
     d = dataset(songs_dir)
     X_train, X_test, y_train, y_test = d.train_test_split(0.7)
 
