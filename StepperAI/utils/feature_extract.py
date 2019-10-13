@@ -6,6 +6,10 @@ from pyAudioAnalysis import audioFeatureExtraction as aF
 
 class music_features():
     def __init__(self, song, m_step=35, bpm_overwrite=False, offset=False):
+        '''
+        step is interval of when the get features through the song
+        m_step is the number of steps per measure
+        '''
         self.m_step = m_step
 
         duration = AudioSegment.from_wav(song).duration_seconds
@@ -16,6 +20,9 @@ class music_features():
             step = ((60 / bpm) * 4) / self.m_step
             self.get_features(x, Fs, offset, step)
         else:
+            # does get_features twice
+            # first to find bpm, to get step
+            # second for actual features
             step = 0.050
             self.get_features(x, Fs, offset, step)
             bpm, _ = aF.beatExtraction(self.F, 0.050)
@@ -23,6 +30,9 @@ class music_features():
             self.get_features(x, Fs, offset, step)
 
     def get_features(self, x, Fs, offset, step):
+        '''
+        adds silence to the beginning if offset makes chart start before song
+        '''
         self.F, _ = aF.stFeatureExtraction(x, Fs, 0.050 * Fs, step * Fs)
         if offset:
             if offset == 0:
