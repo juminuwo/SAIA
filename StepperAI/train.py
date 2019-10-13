@@ -13,12 +13,13 @@ from utils.sm import sm
 class data():
     def __init__(self, input_sm, input_song):
         try:
-            subprocess.check_output(
-                ['sox', '-v', '0.98', input_song, 'output.wav', 'remix', "1,2"])
+            subprocess.check_output([
+                'sox', '-v', '0.98', input_song, 'output.wav', 'remix', "1,2"
+            ])
         except:
             subprocess.call(['cp', input_song, 'output.wav'])
         self.s = sm(input_sm)
-    
+
     def generate_data(self, n_chart):
         self.s.load_chart(n_chart)
         self.s.generate_data()
@@ -104,9 +105,12 @@ class dataset():
             return arr[:split], arr[split:]
 
         train_ind, test_ind = split(arr, test)
-        
+
         def select_ind(l, ind):
-           return [l[i] for i in ind]
+            return [l[i] for i in ind]
+
+        def list_to_np(l):
+            return np.array([np.array(i) for i in l])
 
         if val:
             test_ind, val_ind = split(test_ind, val)
@@ -116,13 +120,16 @@ class dataset():
             y_test = select_ind(self.output_list, test_ind)
             X_val = select_ind(self.input_list, val_ind)
             y_val = select_ind(self.output_list, val_ind)
-            return X_train, X_test, y_train, y_test, (X_val, y_val)
+            return list_to_np(X_train), list_to_np(X_test), list_to_np(
+                y_train), list_to_np(y_test), (list_to_np(X_val),
+                                               list_to_np(y_val))
         else:
             X_train = select_ind(self.input_list, train_ind)
             X_test = select_ind(self.input_list, test_ind)
             y_train = select_ind(self.output_list, train_ind)
             y_test = select_ind(self.output_list, test_ind)
-            return X_train, X_test, y_train, y_test
+            return list_to_np(X_train), list_to_np(X_test), list_to_np(
+                y_train), list_to_np(y_test)
 
 
 if __name__ == '__main__':
@@ -132,3 +139,7 @@ if __name__ == '__main__':
 
     nn_model = nn.nn()
     nn_model.create_model(len(d.input_list[0]), len(d.output_list[0]))
+    nn_model.train(X_train,
+                   y_train,
+                   save_path='backup',
+                   validation_data=(X_test, y_test))
