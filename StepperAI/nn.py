@@ -24,7 +24,7 @@ class nn():
               x_train,
               y_train,
               save_path,
-              batch_size=150000,
+              batch_size=5,
               epochs=10,
               validation_data=False):
 
