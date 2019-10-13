@@ -14,7 +14,7 @@ class data():
     def __init__(self, input_sm, input_song):
         try:
             subprocess.check_output(
-                ['sox', input_song, 'output.wav', 'remix', "1,2"])
+                ['sox', '-v', '0.98', input_song, 'output.wav', 'remix', "1,2"])
         except:
             subprocess.call(['cp', input_song, 'output.wav'])
         self.s = sm(input_sm)
@@ -70,20 +70,33 @@ class dataset():
         self.input_list = []
         self.output_list = []
         for sm_file, song_file in zip(self.sm_files, self.song_files):
+            print('LOADING sm file: {}'.format(sm_file))
+            print('LOADING song file: {}'.format(song_file))
             d = data(sm_file, song_file)
             for n_chart in range(d.s.n_charts):
                 d.generate_data(n_chart)
                 self.input_list.append(d.input_data)
                 self.output_list.append(d.output_data)
 
+        def flat_list(l):
+            flat = []
+            for sub_l in l:
+                for item in sub_l:
+                    flat.append(item)
+            return flat
+
+        self.input_list = flat_list(self.input_list)
+        self.output_list = flat_list(self.output_list)
+
     def train_test_split(self, test, val=False):
         '''
         Makes a train/test split by test value, then splits the test set by val
         value.
         '''
+
         length = len(self.input_list)
         arr = np.arange(length)
-        arr = np.random.shuffle(arr)
+        np.random.shuffle(arr)
 
         def split(arr, split):
             length = len(arr)
@@ -91,21 +104,24 @@ class dataset():
             return arr[:split], arr[split:]
 
         train_ind, test_ind = split(arr, test)
+        
+        def select_ind(l, ind):
+           return [l[i] for i in ind]
 
         if val:
             test_ind, val_ind = split(test_ind, val)
-            X_train = self.input_list[train_ind]
-            X_test = self.input_list[test_ind]
-            y_train = self.output_list[train_ind]
-            y_test = self.output_list[test_ind]
-            X_val = self.input_list[val_ind]
-            y_val = self.output_list[val_ind]
+            X_train = select_ind(self.input_list, train_ind)
+            X_test = select_ind(self.input_list, test_ind)
+            y_train = select_ind(self.output_list, train_ind)
+            y_test = select_ind(self.output_list, test_ind)
+            X_val = select_ind(self.input_list, val_ind)
+            y_val = select_ind(self.output_list, val_ind)
             return X_train, X_test, y_train, y_test, (X_val, y_val)
         else:
-            X_train = self.input_list[train_ind]
-            X_test = self.input_list[test_ind]
-            y_train = self.output_list[train_ind]
-            y_test = self.output_list[test_ind]
+            X_train = select_ind(self.input_list, train_ind)
+            X_test = select_ind(self.input_list, test_ind)
+            y_train = select_ind(self.output_list, train_ind)
+            y_test = select_ind(self.output_list, test_ind)
             return X_train, X_test, y_train, y_test
 
 
@@ -115,4 +131,4 @@ if __name__ == '__main__':
     X_train, X_test, y_train, y_test = d.train_test_split(0.7)
 
     nn_model = nn.nn()
-    nn_model.create_model(input_dim, output_dim)
+    nn_model.create_model(len(d.input_list[0]), len(d.output_list[0]))
