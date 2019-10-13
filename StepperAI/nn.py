@@ -9,11 +9,9 @@ class nn():
     def create_model(self, input_dim, output_dim):
         self.model = Sequential()
         self.model.add(Dense(1000, activation='relu', input_dim=input_dim))
-        self.model.add(Dropout(0.1))
         self.model.add(Dense(800))
-        self.model.add(Dropout(0.1))
         self.model.add(Dense(800))
-        self.model.add(Dropout(0.1))
+        self.model.add(Dense(800))
         self.model.add(Dense(800))
         self.model.add(Dense(output_dim, activation='softmax'))
         self.model.compile(loss='categorical_crossentropy',

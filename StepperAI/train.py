@@ -73,7 +73,11 @@ class dataset():
         for sm_file, song_file in zip(self.sm_files, self.song_files):
             print('LOADING sm file: {}'.format(sm_file))
             print('LOADING song file: {}'.format(song_file))
-            d = data(sm_file, song_file)
+            try:
+                d = data(sm_file, song_file)
+            except:
+                print('ERROR READING FILE, THUS SKIPPED.')
+                pass
             for n_chart in range(d.s.n_charts):
                 d.generate_data(n_chart)
                 self.input_list.append(d.input_data)
@@ -129,13 +133,13 @@ class dataset():
 
 
 if __name__ == '__main__':
-    songs_dir = '/media/adrian/Main/Games/StepMania 5/test_packs/'
+    songs_dir = '/media/adrian/Main/Games/StepMania 5/train_packs/'
     d = dataset(songs_dir)
-    X_train, X_test, y_train, y_test = d.train_test_split(0.7)
+    X_train, X_test, y_train, y_test = d.train_test_split(0.9)
 
     nn_model = nn.nn()
     nn_model.create_model(len(d.input_list[0]), len(d.output_list[0]))
     nn_model.train(X_train,
                    y_train,
-                   save_path='backup', batch_size=1000, epochs=20,
+                   save_path='backup', batch_size=2, epochs=150,
                    validation_data=(X_test, y_test))
