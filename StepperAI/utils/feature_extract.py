@@ -1,7 +1,7 @@
 import numpy as np
-from pydub import AudioSegment
 from pyAudioAnalysis import audioBasicIO
 from pyAudioAnalysis import audioFeatureExtraction as aF
+from pydub import AudioSegment
 
 
 class music_features():
@@ -13,6 +13,8 @@ class music_features():
         self.m_step = m_step
 
         duration = AudioSegment.from_wav(song).duration_seconds
+        if offset:
+            duration = duration + offset
         [Fs, x] = audioBasicIO.readAudioFile(song)
 
         if bpm_overwrite:
@@ -50,25 +52,26 @@ class music_features():
         self.input_data = []
 
         lengths = []
-        for i in range(int(self.F.shape[1]/self.m_step)):
+        for i in range(int(self.F.shape[1] / self.m_step)):
             data = self.F[:,
-                    int(round(self.m_step *
-                                (i))):int(round(self.m_step * (i + 1)))]
+                          int(round(self.m_step *
+                                    (i))):int(round(self.m_step * (i + 1)))]
             self.input_data.append(data)
             lengths.append(data.shape[1])
 
         min_length = np.min(lengths)
         for n, data in enumerate(self.input_data):
-            self.input_data[n] = data[:, :min_length]
+            self.input_data[n] = np.concatenate(
+                [data[:, :min_length].reshape(-1), [n]])
 
 
 if __name__ == '__main__':
-    song = "shihen.wav"
+    song = "output.wav"
     m_f = music_features(song, bpm_overwrite=324)
     m_f.generate_data()
     print(len(m_f.input_data))
-    print(m_f.input_data[0].shape)
+    print(len(m_f.input_data[0]))
     m_f = music_features(song)
     m_f.generate_data()
     print(len(m_f.input_data))
-    print(m_f.input_data[0].shape)
+    print(len(m_f.input_data[0]))

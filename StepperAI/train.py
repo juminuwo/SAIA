@@ -1,10 +1,8 @@
 import subprocess
 
+import nn
 from utils.feature_extract import music_features
 from utils.sm import sm
-
-input_song = 'shihen.wav'
-input_sm = 'shihen.sm'
 
 
 class data():
@@ -18,17 +16,18 @@ class data():
         s.load_chart(0)
         s.generate_data()
         self.output_data = s.output_data
-        if s.bpm:
-            m_f = music_features('output.wav',
-                                 bpm_overwrite=len(self.output_data),
-                                 offset=s.offset)
-        else:
-            m_f = music_features('output.wav', offset=s.offset)
+        m_f = music_features('output.wav',
+                             bpm_overwrite=len(s.output_data),
+                             offset=s.offset)
         m_f.generate_data()
         self.input_data = m_f.input_data
 
 
 if __name__ == '__main__':
+    input_song = 'shihen.wav'
+    input_sm = 'shihen.sm'
+
     d = data(input_song, input_sm)
-    print(len(d.output_data))
-    print(len(d.input_data))
+    assert len(d.output_data) == len(d.input_data)
+    print('Output len: {}'.format(len(d.output_data[0])))
+    print('Input len: {}'.format(len(d.input_data[0])))

@@ -1,5 +1,5 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 class sm():
@@ -84,6 +84,6 @@ if __name__ == '__main__':
 
     for i in range(s.n_charts):
         s.load_chart(i)
-    
+
     s.generate_data()
     s.output_data
