@@ -109,9 +109,6 @@ class dataset():
         def select_ind(l, ind):
             return [l[i] for i in ind]
 
-        def list_to_np(l):
-            return np.array([np.array(i) for i in l])
-
         if val:
             test_ind, val_ind = split(test_ind, val)
             X_train = select_ind(self.input_list, train_ind)
@@ -120,16 +117,15 @@ class dataset():
             y_test = select_ind(self.output_list, test_ind)
             X_val = select_ind(self.input_list, val_ind)
             y_val = select_ind(self.output_list, val_ind)
-            return list_to_np(X_train), list_to_np(X_test), list_to_np(
-                y_train), list_to_np(y_test), (list_to_np(X_val),
-                                               list_to_np(y_val))
+            return np.array(X_train), np.array(X_test), np.array(
+                y_train), np.array(y_test), (np.array(X_val), np.array(y_val))
         else:
             X_train = select_ind(self.input_list, train_ind)
             X_test = select_ind(self.input_list, test_ind)
             y_train = select_ind(self.output_list, train_ind)
             y_test = select_ind(self.output_list, test_ind)
-            return list_to_np(X_train), list_to_np(X_test), list_to_np(
-                y_train), list_to_np(y_test)
+            return np.array(X_train), np.array(X_test), np.array(
+                y_train), np.array(y_test)
 
 
 if __name__ == '__main__':
@@ -141,5 +137,5 @@ if __name__ == '__main__':
     nn_model.create_model(len(d.input_list[0]), len(d.output_list[0]))
     nn_model.train(X_train,
                    y_train,
-                   save_path='backup',
+                   save_path='backup', batch_size=1000, epochs=20,
                    validation_data=(X_test, y_test))

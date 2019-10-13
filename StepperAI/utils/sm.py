@@ -26,7 +26,8 @@ class sm():
         self.offset = float(self.meta_dict['#OFFSET'][:-1])
 
         # get indexs where chart starts/ends
-        self.chart_index = self.sm[self.sm.str.contains('//---')].index.tolist()
+        self.chart_index = self.sm[self.sm.str.contains(
+            '//---')].index.tolist()
         self.chart_index.append(len(self.sm))
 
         # count of how many charts
@@ -53,11 +54,14 @@ class sm():
         # note chart
         chart = sm[n + 6:]
         self.chart = chart[chart != '']
+        self.chart = self.chart.loc[self.chart.str.startswith(
+            ('0', '1', '2', '3', '4', 'M', 'K', 'L', 'F', ','))]
 
     @staticmethod
     def measure_to_data(measure, measure_length=192):
-        measure = measure[~measure.str.contains(',')].reset_index(drop=True)
+        measure = measure[~measure.str.startswith(',')].reset_index(drop=True)
         measure_step = measure_length / len(measure)
+        assert (measure_step).is_integer()
         out_measure = pd.Series(['0000' for _ in range(measure_length)])
         for n, m in enumerate(measure):
             out_measure[n * measure_step] = m
@@ -65,12 +69,14 @@ class sm():
         out_data = []
         for measure in out_measure:
             out_data += [note for note in measure]
+
+        assert len(out_data) == measure_length * 4
         return out_data
 
     def generate_data(self):
         measure_break = [
             self.chart.index[0]
-        ] + self.chart[self.chart.str.contains(',')].index.tolist()
+        ] + self.chart[self.chart.str.startswith(',')].index.tolist()
 
         self.output_data = []
         for i in range(len(measure_break) - 1):
@@ -82,8 +88,8 @@ class sm():
         measure_df = pd.DataFrame()
         for measure in output_data:
             measure_strings = []
-            for i in range(int(len(measure)/4)):
-                measure_strings.append(''.join(measure[i*4:(i+1)*4]))
+            for i in range(int(len(measure) / 4)):
+                measure_strings.append(''.join(measure[i * 4:(i + 1) * 4]))
             assert len(measure_strings) / 192
             measure_strings.append(',')
             measure_strings = pd.DataFrame(measure_strings)
@@ -91,15 +97,11 @@ class sm():
         measure_df.iloc[-1] = ';'
         return measure_df
 
+
 if __name__ == '__main__':
     sm_file = '/media/adrian/Main/Games/StepMania 5/Songs/GIRLS/30Min Harder/30 Minutes.sm'
-    sm_file = "/media/adrian/Main/Games/StepMania 5/test_packs/You're Streaming Forever/-273.15/-273.15.sm" 
-    s = sm(sm_file)
-
-    for i in range(s.n_charts):
-        s.load_chart(i)
-
-    s.generate_data()
-    output_data = s.output_data
-    
-    measure = output_data[0]
+    sm_file = "/media/adrian/Main/Games/StepMania 5/test_packs/You're Streaming Forever/-273.15/-273.15.sm"
+    sm_file = "/media/adrian/Main/Games/StepMania 5/test_packs/You're Streaming Forever/Block Control VIP/Block Control VIP.sm"
+    self = sm(sm_file)
+    self.load_chart(0)
+    self.generate_data()

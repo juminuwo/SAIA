@@ -1,6 +1,8 @@
+import os
+
+from keras.callbacks import ModelCheckpoint
 from keras.layers import Dense, Dropout
 from keras.models import Sequential
-from keras.callbacks import ModelCheckpoint
 
 
 class nn():
@@ -22,12 +24,13 @@ class nn():
               x_train,
               y_train,
               save_path,
-              batch_size=1500,
+              batch_size=150000,
               epochs=10,
               validation_data=False):
 
-        checkpointer = ModelCheckpoint(filepath=save_path,
-                                         verbose=1)
+        checkpointer = ModelCheckpoint(filepath=os.path.join(
+            save_path, 'weights.{epoch:02d}-{val_loss:.2f}.hdf5'),
+                                       verbose=1)
         if validation_data:
             self.model.fit(x_train,
                            y_train,
@@ -37,14 +40,12 @@ class nn():
                            validation_data=validation_data,
                            callbacks=[checkpointer])
         else:
-            self.model.fit(
-                x_train,
-                y_train,
-                batch_size=batch_size,
-                epochs=epochs,
-                shuffle=False,
-                callbacks=[checkpointer]
-            )
+            self.model.fit(x_train,
+                           y_train,
+                           batch_size=batch_size,
+                           epochs=epochs,
+                           shuffle=False,
+                           callbacks=[checkpointer])
 
     def save(self, path):
         self.model.save(path)
