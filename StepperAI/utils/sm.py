@@ -48,7 +48,7 @@ class sm():
         n = n[0]
         dance_type = sm.iloc[n + 1]
         assert 'dance-single' in dance_type, 'Not a singles chart.'
-        self.numeric_meter = sm.iloc[n + 4]
+        self.numeric_meter = float(sm.iloc[n + 4][:-1])
 
         # note chart
         chart = sm[n + 6:]
@@ -77,6 +77,19 @@ class sm():
             measure = self.chart.loc[measure_break[i]:measure_break[i + 1]]
             self.output_data.append(self.measure_to_data(measure))
 
+    @staticmethod
+    def output_data_to_df(output_data):
+        measure_df = pd.DataFrame()
+        for measure in output_data:
+            measure_strings = []
+            for i in range(int(len(measure)/4)):
+                measure_strings.append(''.join(measure[i*4:(i+1)*4]))
+            assert len(measure_strings) / 192
+            measure_strings.append(',')
+            measure_strings = pd.DataFrame(measure_strings)
+            measure_df = measure_df.append(measure_strings)
+        measure_df.iloc[-1] = ';'
+        return measure_df
 
 if __name__ == '__main__':
     sm_file = '/media/adrian/Main/Games/StepMania 5/Songs/GIRLS/30Min Harder/30 Minutes.sm'
@@ -86,4 +99,6 @@ if __name__ == '__main__':
         s.load_chart(i)
 
     s.generate_data()
-    s.output_data
+    output_data = s.output_data
+    
+    measure = output_data[0]
