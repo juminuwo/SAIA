@@ -26,7 +26,7 @@ class sm():
         self.offset = float(self.meta_dict['#OFFSET'][:-1])
 
         # get indexs where chart starts/ends
-        self.chart_index = self.sm[self.sm.str.contains('//')].index.tolist()
+        self.chart_index = self.sm[self.sm.str.contains('//---')].index.tolist()
         self.chart_index.append(len(self.sm))
 
         # count of how many charts
@@ -93,6 +93,7 @@ class sm():
 
 if __name__ == '__main__':
     sm_file = '/media/adrian/Main/Games/StepMania 5/Songs/GIRLS/30Min Harder/30 Minutes.sm'
+    sm_file = "/media/adrian/Main/Games/StepMania 5/test_packs/You're Streaming Forever/-273.15/-273.15.sm" 
     s = sm(sm_file)
 
     for i in range(s.n_charts):
