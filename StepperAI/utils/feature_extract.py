@@ -11,14 +11,15 @@ class music_features():
         m_step is the number of steps per measure
         '''
         self.m_step = m_step
+        self.bpm_overwrite = bpm_overwrite
 
         duration = AudioSegment.from_wav(song).duration_seconds
         if offset:
             duration = duration + offset
         [Fs, x] = audioBasicIO.readAudioFile(song)
 
-        if bpm_overwrite:
-            bpm = (bpm_overwrite * 4 * 60) / duration
+        if self.bpm_overwrite:
+            bpm = (self.bpm_overwrite * 4 * 60) / duration
             step = ((60 / bpm) * 4) / self.m_step
             self.get_features(x, Fs, offset, step)
         else:
@@ -49,25 +50,26 @@ class music_features():
                 self.F = np.concatenate([silence, self.F], axis=1)
 
     def generate_data(self):
-        self.input_data = []
+        self.input_data = np.array([])
 
-        lengths = []
-        for i in range(int(self.F.shape[1] / self.m_step)):
-            data = self.F[:,
-                          int(round(self.m_step *
-                                    (i))):int(round(self.m_step * (i + 1)))]
-            self.input_data.append(data)
-            lengths.append(data.shape[1])
-
-        min_length = np.min(lengths)
-        for n, data in enumerate(self.input_data):
-            self.input_data[n] = np.concatenate(
-                [data[:, :min_length].reshape(-1), [n]])
-
+        for i in range(self.bpm_overwrite):
+            i_1 = int(round(self.m_step * (i)))
+            i_2 = int(round(self.m_step * (i + 1)))
+            check = self.F.shape[1] - i_2
+            if check < 0:
+                i_1 = i_1 + check
+                i_2 = i_2 + check
+            data = self.F[:, i_1:i_2]
+            
+            assert data.shape[1] == self.m_step
+            if self.input_data.size:
+                self.input_data = np.column_stack([self.input_data, data.reshape(-1)])
+            else:
+                self.input_data = data.reshape(-1)
 
 if __name__ == '__main__':
     song = "output.wav"
-    m_f = music_features(song, bpm_overwrite=324)
+    m_f = music_features(song, bpm_overwrite=410)
     m_f.generate_data()
     print(len(m_f.input_data))
     print(len(m_f.input_data[0]))

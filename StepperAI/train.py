@@ -25,11 +25,17 @@ class data():
         self.s.generate_data()
         self.output_data = self.s.output_data
         m_f = music_features('output.wav',
-                             bpm_overwrite=len(self.s.output_data),
+                             bpm_overwrite=self.output_data.shape[1],
                              offset=self.s.offset)
         m_f.generate_data()
-        for n, m in enumerate(m_f.input_data):
-            m_f.input_data[n] = np.concatenate([m, [self.s.numeric_meter]])
+        m_f.input_data = np.vstack([
+            m_f.input_data,
+            np.full((m_f.input_data.shape[1], ), self.s.numeric_meter)
+        ])
+        m_f.input_data = np.vstack([
+            m_f.input_data,
+            np.arange(m_f.input_data.shape[1])
+        ])
         self.input_data = m_f.input_data
 
 
@@ -68,38 +74,42 @@ def get_files(songs_dir):
 class dataset():
     def __init__(self, songs_dir):
         self.sm_files, self.song_files = get_files(songs_dir)
-        self.input_list = []
-        self.output_list = []
+        self.input_list = np.array([])
+        self.output_list = np.array([])
         for sm_file, song_file in zip(self.sm_files, self.song_files):
             print('LOADING sm file: {}'.format(sm_file))
             print('LOADING song file: {}'.format(song_file))
             try:
                 d = data(sm_file, song_file)
             except:
-                print('ERROR READING FILE, THUS SKIPPED.')
-                pass
+                print('ERROR READING SM FILE, THUS SKIPPED.')
+                continue
             for n_chart in range(d.s.n_charts):
-                d.generate_data(n_chart)
-                self.input_list.append(d.input_data)
-                self.output_list.append(d.output_data)
+                try:
+                    d.generate_data(n_chart)
+                except:
+                    print('ERROR READING SONG FILE, THUS SKIPPED.')
+                    break  # go back to parent loop
+                if self.input_list.size:
+                    self.input_list = np.column_stack(
+                        [self.input_list, d.input_data])
+                else:
+                    self.input_list = d.input_data
+                if self.output_list.size:
+                    self.output_list = np.column_stack(
+                        [self.output_list, d.output_data])
+                else:
+                    self.output_list = d.output_data
 
-        def flat_list(l):
-            flat = []
-            for sub_l in l:
-                for item in sub_l:
-                    flat.append(item)
-            return flat
-
-        self.input_list = flat_list(self.input_list)
-        self.output_list = flat_list(self.output_list)
-
-    def train_test_split(self, test, val=False):
+    @staticmethod
+    def train_test_split(input_list, output_list, test, val=False):
         '''
         Makes a train/test split by test value, then splits the test set by val
         value.
         '''
 
-        length = len(self.input_list)
+        assert len(input_list) == len(output_list)
+        length = input_list.shape[1]
         arr = np.arange(length)
         np.random.shuffle(arr)
 
@@ -111,35 +121,46 @@ class dataset():
         train_ind, test_ind = split(arr, test)
 
         def select_ind(l, ind):
-            return [l[i] for i in ind]
+            return l[:, ind]
 
         if val:
             test_ind, val_ind = split(test_ind, val)
-            X_train = select_ind(self.input_list, train_ind)
-            X_test = select_ind(self.input_list, test_ind)
-            y_train = select_ind(self.output_list, train_ind)
-            y_test = select_ind(self.output_list, test_ind)
-            X_val = select_ind(self.input_list, val_ind)
-            y_val = select_ind(self.output_list, val_ind)
-            return np.array(X_train), np.array(X_test), np.array(
-                y_train), np.array(y_test), (np.array(X_val), np.array(y_val))
+            X_train = select_ind(input_list, train_ind)
+            X_test = select_ind(input_list, test_ind)
+            y_train = select_ind(output_list, train_ind)
+            y_test = select_ind(output_list, test_ind)
+            X_val = select_ind(input_list, val_ind)
+            y_val = select_ind(output_list, val_ind)
+            return X_train, X_test, y_train, y_test, (X_val, y_val)
         else:
-            X_train = select_ind(self.input_list, train_ind)
-            X_test = select_ind(self.input_list, test_ind)
-            y_train = select_ind(self.output_list, train_ind)
-            y_test = select_ind(self.output_list, test_ind)
-            return np.array(X_train), np.array(X_test), np.array(
-                y_train), np.array(y_test)
+            X_train = select_ind(input_list, train_ind)
+            X_test = select_ind(input_list, test_ind)
+            y_train = select_ind(output_list, train_ind)
+            y_test = select_ind(output_list, test_ind)
+            return X_train, X_test, y_train, y_test
 
 
 if __name__ == '__main__':
+    sm_file = "/media/adrian/Main/Games/StepMania 5/test_packs/You're Streaming Forever/Block Control VIP/Block Control VIP.sm"
+    song = '/media/adrian/Main/Games/StepMania 5/train_packs/Cirque du Zonda/Zaia - Apocynthion Drive/HertzDevil - Apocynthion Drive.ogg'
+    song = 'shihen.ogg'
+    d = data(sm_file, song)
+    try:
+        d.generate_data(d.s.n_charts - 1)
+    except:
+        'die'
+
     songs_dir = '/media/adrian/Main/Games/StepMania 5/train_packs/'
     d = dataset(songs_dir)
-    X_train, X_test, y_train, y_test = d.train_test_split(0.9)
+    X_train, X_test, y_train, y_test = d.train_test_split(
+        d.input_list, d.output_list, 0.9)
 
     nn_model = nn.nn()
     nn_model.create_model(len(d.input_list[0]), len(d.output_list[0]))
     nn_model.train(X_train,
                    y_train,
-                   save_path='backup', batch_size=2, epochs=150,
+                   save_path='backup',
+                   batch_size=2,
+                   epochs=150,
                    validation_data=(X_test, y_test))
+
