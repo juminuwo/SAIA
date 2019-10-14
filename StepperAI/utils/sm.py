@@ -73,6 +73,12 @@ class sm():
         assert len(out_data) == measure_length * 4
         return np.array(out_data)
 
+    @staticmethod
+    def output_exclude(output_list, exclude = ('2', '3', '4', 'M', 'K', 'F')):
+        for a in exclude:
+            output_list = np.char.replace(output_list, a, '1')
+        return output_list
+
     def generate_data(self):
         measure_break = [
             self.chart.index[0]
@@ -81,11 +87,13 @@ class sm():
         for i in range(len(measure_break) - 1):
             measure = self.chart.loc[measure_break[i]:measure_break[i + 1]]
             if self.output_data.size:
-                self.output_data = np.column_stack(
+                self.output_data = np.vstack(
                     [self.output_data,
                      self.measure_to_data(measure)])
             else:
                 self.output_data = self.measure_to_data(measure)
+        
+        self.output_data = self.output_exclude(self.output_data)
 
     @staticmethod
     # TODO: REFACTOR with new numpy stuff
@@ -107,7 +115,7 @@ if __name__ == '__main__':
     sm_file = '/media/adrian/Main/Games/StepMania 5/Songs/GIRLS/30Min Harder/30 Minutes.sm'
     sm_file = "/media/adrian/Main/Games/StepMania 5/test_packs/You're Streaming Forever/-273.15/-273.15.sm"
     sm_file = "/media/adrian/Main/Games/StepMania 5/test_packs/You're Streaming Forever/Block Control VIP/Block Control VIP.sm"
-    #sm_file = '/media/adrian/Main/Games/StepMania 5/train_packs/Cirque du Zonda/Zaia - Lifeguard/DJ Myosuke — Lifeguard.sm'
+    sm_file = '/media/adrian/Main/Games/StepMania 5/train_packs/Cirque du Zonda/Zaia - Lifeguard/DJ Myosuke — Lifeguard.sm'
     try:
         self = sm(sm_file)
     except:

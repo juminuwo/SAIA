@@ -63,7 +63,7 @@ class music_features():
             
             assert data.shape[1] == self.m_step
             if self.input_data.size:
-                self.input_data = np.column_stack([self.input_data, data.reshape(-1)])
+                self.input_data = np.vstack([self.input_data, data.reshape(-1)])
             else:
                 self.input_data = data.reshape(-1)
 
