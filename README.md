@@ -1,4 +1,4 @@
-# StepperAI
+# StepAIArtist (SAIA)
 
 An AI to create [StepMania](https://www.stepmania.com/) songs in style of your favourite step artists.
 
