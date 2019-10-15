@@ -87,7 +87,7 @@ class sm():
         for i in range(len(measure_break) - 1):
             measure = self.chart.loc[measure_break[i]:measure_break[i + 1]]
             if self.output_data.size:
-                self.output_data = np.vstack(
+                self.output_data = np.column_stack(
                     [self.output_data,
                      self.measure_to_data(measure)])
             else:

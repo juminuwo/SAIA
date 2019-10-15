@@ -35,6 +35,8 @@ class data():
         m_f.input_data = np.vstack(
             [m_f.input_data,
              np.arange(m_f.input_data.shape[1])])
+        
+        assert m_f.input_data.shape[1] == self.output_data.shape[1]
         self.input_data = m_f.input_data
 
 
@@ -90,15 +92,17 @@ class dataset():
                     print('ERROR READING SONG FILE, THUS SKIPPED.')
                     break  # go back to parent loop
                 if self.input_list.size:
-                    self.input_list = np.vstack(
+                    self.input_list = np.column_stack(
                         [self.input_list, d.input_data])
                 else:
                     self.input_list = d.input_data
                 if self.output_list.size:
-                    self.output_list = np.vstack(
+                    self.output_list = np.column_stack(
                         [self.output_list, d.output_data])
                 else:
                     self.output_list = d.output_data
+        self.input_list = self.input_list.transpose()
+        self.output_list = self.output_list.transpose()
 
 
 
@@ -141,27 +145,22 @@ def train_test_split(input_list, output_list, test, val=False):
 
 
 if __name__ == '__main__':
-    #sm_file = "/media/adrian/Main/Games/StepMania 5/test_packs/You're Streaming Forever/Block Control VIP/Block Control VIP.sm"
-    #song = '/media/adrian/Main/Games/StepMania 5/train_packs/Cirque du Zonda/Zaia - Apocynthion Drive/HertzDevil - Apocynthion Drive.ogg'
-    #song = 'shihen.ogg'
-    #d = data(sm_file, song)
-    #try:
-    #    d.generate_data(d.s.n_charts - 1)
-    #except:
-    #    'die'
+    sm_file = "/media/adrian/Main/Games/StepMania 5/test_packs/You're Streaming Forever/Block Control VIP/Block Control VIP.sm"
+    song = '/media/adrian/Main/Games/StepMania 5/train_packs/Cirque du Zonda/Zaia - Apocynthion Drive/HertzDevil - Apocynthion Drive.ogg'
+    song = 'shihen.ogg'
+    d = data(sm_file, song)
+    d.generate_data(d.s.n_charts - 1)
 
     songs_dir = '/media/adrian/Main/Games/StepMania 5/train_packs/'
     d = dataset(songs_dir)
     np.save('output_list.npy', d.output_list)
     np.save('input_list.npy', d.input_list)
 
-    output_list = np.load('output_list.npy')
-    input_list = np.load('input_list.npy')
     X_train, X_test, y_train, y_test = train_test_split(
-        input_list, output_list, 0.9)
+        d.input_list, d.output_list, 0.9)
 
     nn_model = nn.nn()
-    nn_model.create_model(input_list.shape[1], output_list.shape[1])
+    nn_model.create_model(d.input_list.shape[1], d.output_list.shape[1])
     nn_model.train(X_train,
                    y_train,
                    save_path='backup',
