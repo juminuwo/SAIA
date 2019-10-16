@@ -52,7 +52,11 @@ class music_features():
     def generate_data(self):
         self.input_data = np.array([])
 
-        for i in range(self.bpm_overwrite):
+        if self.bpm_overwrite:
+            r = self.bpm_overwrite
+        else:
+            r = int(self.F.shape[1] / self.m_step)
+        for i in range(r):
             i_1 = int(round(self.m_step * (i)))
             i_2 = int(round(self.m_step * (i + 1)))
             check = self.F.shape[1] - i_2
