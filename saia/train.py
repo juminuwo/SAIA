@@ -20,9 +20,9 @@ class data():
             subprocess.call(['cp', input_song, 'output.wav'])
         self.s = sm(input_sm)
 
-    def generate_data(self, n_chart):
+    def generate_data(self, n_chart, max_=False):
         self.s.load_chart(n_chart)
-        self.s.generate_data()
+        self.s.generate_data(max_=max_)
         self.output_data = self.s.output_data
         m_f = music_features('output.wav',
                              bpm_overwrite=self.output_data.shape[1],
@@ -35,7 +35,7 @@ class data():
         m_f.input_data = np.vstack(
             [m_f.input_data,
              np.arange(m_f.input_data.shape[1])])
-        
+
         assert m_f.input_data.shape[1] == self.output_data.shape[1]
         self.input_data = m_f.input_data
 
@@ -87,7 +87,7 @@ class dataset():
                 continue
             for n_chart in range(d.s.n_charts):
                 try:
-                    d.generate_data(n_chart)
+                    d.generate_data(n_chart, max_=True)
                 except:
                     print('ERROR READING SONG FILE, THUS SKIPPED.')
                     break  # go back to parent loop
@@ -103,7 +103,6 @@ class dataset():
                     self.output_list = d.output_data
         self.input_list = self.input_list.transpose()
         self.output_list = self.output_list.transpose()
-
 
 
 def train_test_split(input_list, output_list, test, val=False):
@@ -145,25 +144,32 @@ def train_test_split(input_list, output_list, test, val=False):
 
 
 if __name__ == '__main__':
-    sm_file = "/media/adrian/Main/Games/StepMania 5/test_packs/You're Streaming Forever/Block Control VIP/Block Control VIP.sm"
-    song = '/media/adrian/Main/Games/StepMania 5/train_packs/Cirque du Zonda/Zaia - Apocynthion Drive/HertzDevil - Apocynthion Drive.ogg'
-    song = 'shihen.ogg'
-    d = data(sm_file, song)
-    d.generate_data(d.s.n_charts - 1)
+    # sm_file = "/media/adrian/Main/Games/StepMania 5/test_packs/You're Streaming Forever/Block Control VIP/Block Control VIP.sm"
+    # song = '/media/adrian/Main/Games/StepMania 5/train_packs/Cirque du Zonda/Zaia - Apocynthion Drive/HertzDevil - Apocynthion Drive.ogg'
+    # song = 'shihen.ogg'
+    # d = data(sm_file, song)
+    # d.generate_data(d.s.n_charts - 1)
 
     songs_dir = '/media/adrian/Main/Games/StepMania 5/train_packs/'
     d = dataset(songs_dir)
     np.save('output_list.npy', d.output_list)
     np.save('input_list.npy', d.input_list)
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        d.input_list, d.output_list, 0.9)
+# ---
 
+    output_list = np.load('output_list.npy')
+    input_list = np.load('input_list.npy')
+    X_train, X_test, y_train, y_test = train_test_split(
+        input_list, output_list, 0.9)
+    del output_list
+    del input_list
     nn_model = nn.nn()
-    nn_model.create_model(d.input_list.shape[1], d.output_list.shape[1])
-    nn_model.train(X_train,
-                   y_train,
-                   save_path='backup',
-                   batch_size=1,
-                   epochs=150,
-                   validation_data=(X_test, y_test))
+    nn_model.create_model(X_train.shape[1],
+                          y_train.shape[1],
+                          save_path='backup')
+    nn_model.model.fit(X_train[5000:7000, :],
+                       y_train[5000:7000, :],
+                       callbacks=[nn_model.checkpointer],
+                       batch_size=1,
+                       epochs=1,
+                       validation_data=(X_test, y_test))

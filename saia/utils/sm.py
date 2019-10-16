@@ -58,7 +58,8 @@ class sm():
             ('0', '1', '2', '3', '4', 'M', 'K', 'L', 'F', ','))]
 
     @staticmethod
-    def measure_to_data(measure, measure_length=192):
+    def measure_to_data(measure, note_type=32, max_=False):
+        measure_length = 192
         measure = measure[~measure.str.startswith(',')].reset_index(drop=True)
         measure_step = measure_length / len(measure)
         assert (measure_step).is_integer()
@@ -68,18 +69,29 @@ class sm():
 
         out_data = []
         for measure in out_measure:
-            out_data += [note for note in measure]
+            if max_:
+                # returns 1 if there is a step
+                if float(measure) > 0:
+                    out_data.append('1')
+                else:
+                    out_data.append('0')
+            else:
+                # returns all cols flattened
+                out_data += [note for note in measure]
 
-        assert len(out_data) == measure_length * 4
+        out_data = [
+            note for n, note in enumerate(out_data)
+            if n % (measure_length / note_type) == 0
+        ]
         return np.array(out_data)
 
     @staticmethod
-    def output_exclude(output_list, exclude = ('2', '3', '4', 'M', 'K', 'F')):
+    def output_exclude(output_list, exclude=('2', '3', '4', 'M', 'K', 'F')):
         for a in exclude:
             output_list = np.char.replace(output_list, a, '1')
         return output_list
 
-    def generate_data(self):
+    def generate_data(self, max_=False):
         measure_break = [
             self.chart.index[0]
         ] + self.chart[self.chart.str.startswith(',')].index.tolist()
@@ -87,12 +99,13 @@ class sm():
         for i in range(len(measure_break) - 1):
             measure = self.chart.loc[measure_break[i]:measure_break[i + 1]]
             if self.output_data.size:
-                self.output_data = np.column_stack(
-                    [self.output_data,
-                     self.measure_to_data(measure)])
+                self.output_data = np.column_stack([
+                    self.output_data,
+                    self.measure_to_data(measure, max_=max_)
+                ])
             else:
-                self.output_data = self.measure_to_data(measure)
-        
+                self.output_data = self.measure_to_data(measure, max_=max_)
+
         self.output_data = self.output_exclude(self.output_data)
 
     @staticmethod
@@ -115,10 +128,10 @@ if __name__ == '__main__':
     sm_file = '/media/adrian/Main/Games/StepMania 5/Songs/GIRLS/30Min Harder/30 Minutes.sm'
     sm_file = "/media/adrian/Main/Games/StepMania 5/test_packs/You're Streaming Forever/-273.15/-273.15.sm"
     sm_file = "/media/adrian/Main/Games/StepMania 5/test_packs/You're Streaming Forever/Block Control VIP/Block Control VIP.sm"
-    sm_file = '/media/adrian/Main/Games/StepMania 5/train_packs/Cirque du Zonda/Zaia - Lifeguard/DJ Myosuke — Lifeguard.sm'
+    #sm_file = '/media/adrian/Main/Games/StepMania 5/train_packs/Cirque du Zonda/Zaia - Lifeguard/DJ Myosuke — Lifeguard.sm'
     try:
         self = sm(sm_file)
     except:
         'die'
     self.load_chart(0)
-    self.generate_data()
+    self.generate_data(max_=True)
