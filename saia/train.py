@@ -150,12 +150,12 @@ if __name__ == '__main__':
     # d = data(sm_file, song)
     # d.generate_data(d.s.n_charts - 1)
 
-    songs_dir = '/media/adrian/Main/Games/StepMania 5/train_packs/'
-    d = dataset(songs_dir)
-    np.save('output_list.npy', d.output_list)
-    np.save('input_list.npy', d.input_list)
+    #songs_dir = '/media/adrian/Main/Games/StepMania 5/train_packs/'
+    #d = dataset(songs_dir)
+    #np.save('output_list.npy', d.output_list)
+    #np.save('input_list.npy', d.input_list)
 
-# ---
+    # ---
 
     output_list = np.load('output_list.npy')
     input_list = np.load('input_list.npy')
@@ -163,13 +163,16 @@ if __name__ == '__main__':
         input_list, output_list, 0.9)
     del output_list
     del input_list
-    nn_model = nn.nn()
-    nn_model.create_model(X_train.shape[1],
-                          y_train.shape[1],
-                          save_path='backup')
-    nn_model.model.fit(X_train[5000:7000, :],
-                       y_train[5000:7000, :],
-                       callbacks=[nn_model.checkpointer],
-                       batch_size=1,
-                       epochs=1,
-                       validation_data=(X_test, y_test))
+    #import keras
+    from keras.models import Sequential
+    from keras.layers import Dense, Activation
+
+    model = Sequential()
+    model.add(Dense(32, activation='relu', input=X_train.shape[1]))
+    model.add(Dense(y_train.shape[1], activation='sigmoid'))
+    model.compile(optimizer='rmsprop',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+    
+    model.fit(X_train[0:1000, :], y_train[0:1000, :], epochs=10, batch_size=2)
+
