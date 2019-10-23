@@ -168,11 +168,21 @@ if __name__ == '__main__':
     from keras.layers import Dense, Activation
 
     model = Sequential()
-    model.add(Dense(32, activation='relu', input=X_train.shape[1]))
+    model.add(Dense(200, activation='relu', input_dim=X_train.shape[1]))
+    model.add(Dense(100, activation='relu'))
+    model.add(Dense(50, activation='relu'))
     model.add(Dense(y_train.shape[1], activation='sigmoid'))
     model.compile(optimizer='rmsprop',
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
-    
-    model.fit(X_train[0:1000, :], y_train[0:1000, :], epochs=10, batch_size=2)
 
+    model.fit(X_train,
+              y_train,
+              epochs=10,
+              batch_size=128,
+              validation_data=(X_test, y_test))
+
+    y = np.rint(model.predict(X_test))
+    acc = 1 - np.mean(abs(y - y_test.astype(float)))
+    print('accuracy: {}'.format(acc))
+    np.unique(np.sum(y, axis=1), return_counts=True)
