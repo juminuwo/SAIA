@@ -6,3 +6,5 @@ http://sox.sourceforge.net/
 `sox input.ogg output.wav remix '1,2'` convert to mono
 
 https://towardsdatascience.com/recurrent-neural-networks-by-example-in-python-ffd204f99470
+
+Try a lookback tree estimator after on beat estimator for patterns. (Wanting a time-series-classification-like solution.)
