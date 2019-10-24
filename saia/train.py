@@ -5,7 +5,6 @@ from glob import glob
 import numpy as np
 from natsort import natsorted
 
-import nn
 from utils.feature_extract import music_features
 from utils.sm import sm
 
@@ -186,3 +185,8 @@ if __name__ == '__main__':
     acc = 1 - np.mean(abs(y - y_test.astype(float)))
     print('accuracy: {}'.format(acc))
     np.unique(np.sum(y, axis=1), return_counts=True)
+
+    from sklearn.metrics import confusion_matrix
+    confusion_matrix(y_test.flatten(),
+                     y.astype('<U1').flatten(),
+                     labels=['0', '1']) / len(y_test.flatten())
