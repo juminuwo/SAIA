@@ -1,8 +1,30 @@
+import os
+import itertools
+
+import joblib
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 
+
+def permutate_step(hit = ('0', '1', '2', '3', '4', 'M', 'K', 'L', 'F')):
+    hit = np.repeat(hit, 4)
+    hit = [comb for comb in itertools.combinations(hit, 4)]
+    hit = list(set(hit))
+    steps = []
+    for h in hit:
+        step = np.unique([''.join(p) for p in itertools.permutations(h)])
+        steps += step.tolist()
+    return steps
 
 class sm():
+    @staticmethod
+    def label_encoder(save_loc='.'):
+        le = LabelEncoder()
+        steps = permutate_step()
+        le.fit(steps)
+        joblib.dump(le, os.path.join(save_loc, 'label_encoder.pickle'))
+
     def __init__(self, sm_file):
         '''
         load info from chart, including the chart itself
@@ -66,10 +88,15 @@ class sm():
         out_measure = pd.Series(['0000' for _ in range(measure_length)])
         for n, m in enumerate(measure):
             out_measure[n * measure_step] = m
+        
+        if max_ == 'label_encoder':
+            le = joblib.load('label_encoder.pickle')
 
         out_data = []
         for measure in out_measure:
-            if max_:
+            if max_ == 'label_encoder':
+                out_data.append(le.transform([measure])[0])
+            elif max_ == True:
                 # returns 1 if there is a step
                 if float(measure) > 0:
                     out_data.append('1')
@@ -106,7 +133,8 @@ class sm():
             else:
                 self.output_data = self.measure_to_data(measure, max_=max_)
 
-        self.output_data = self.output_exclude(self.output_data)
+        if max_ != 'label_encoder':
+            self.output_data = self.output_exclude(self.output_data)
 
     @staticmethod
     # TODO: REFACTOR with new numpy stuff
@@ -135,3 +163,4 @@ if __name__ == '__main__':
         'die'
     self.load_chart(0)
     self.generate_data(max_=True)
+    self.generate_data(max_='label_encoder')
