@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
 
-def permutate_step(hit = ('0', '1', '2', '3', '4', 'M', 'K', 'L', 'F')):
+def permutate_step(hit=('0', '1', '2', '3', '4', 'M', 'K', 'L', 'F')):
     hit = np.repeat(hit, 4)
     hit = [comb for comb in itertools.combinations(hit, 4)]
     hit = list(set(hit))
@@ -17,14 +17,14 @@ def permutate_step(hit = ('0', '1', '2', '3', '4', 'M', 'K', 'L', 'F')):
         steps += step.tolist()
     return steps
 
-class sm():
-    @staticmethod
-    def label_encoder(save_loc='.'):
-        le = LabelEncoder()
-        steps = permutate_step()
-        le.fit(steps)
-        joblib.dump(le, os.path.join(save_loc, 'label_encoder.pickle'))
+def label_encoder(save_loc='.',
+                    hit=('0', '1', '2', '3', '4', 'M', 'K', 'L', 'F')):
+    le = LabelEncoder()
+    steps = permutate_step(hit)
+    le.fit(steps)
+    joblib.dump(le, os.path.join(save_loc, 'label_encoder.pickle'))
 
+class sm():
     def __init__(self, sm_file):
         '''
         load info from chart, including the chart itself
@@ -88,7 +88,7 @@ class sm():
         out_measure = pd.Series(['0000' for _ in range(measure_length)])
         for n, m in enumerate(measure):
             out_measure[n * measure_step] = m
-        
+
         if max_ == 'label_encoder':
             le = joblib.load('label_encoder.pickle')
 
@@ -113,12 +113,16 @@ class sm():
         return np.array(out_data)
 
     @staticmethod
-    def output_exclude(output_list, exclude=('2', '3', '4', 'M', 'K', 'F')):
-        for a in exclude:
-            output_list = np.char.replace(output_list, a, '1')
-        return output_list
+    def chart_exclude(chart, exclude=('2', '3', '4', 'M', 'K', 'F')):
+        for i in range(len(chart)):
+            temp_measure = chart.iloc[i]
+            for a in exclude:
+                temp_measure = np.char.replace(temp_measure, a, '1')
+            chart.iloc[i] = str(temp_measure)
+        return chart
 
-    def generate_data(self, max_=False):
+    def generate_data(self, max_=False, exclude=('2', '3', '4', 'M', 'K', 'F')):
+        self.chart = self.chart_exclude(self.chart, exclude)
         measure_break = [
             self.chart.index[0]
         ] + self.chart[self.chart.str.startswith(',')].index.tolist()
@@ -132,9 +136,6 @@ class sm():
                 ])
             else:
                 self.output_data = self.measure_to_data(measure, max_=max_)
-
-        if max_ != 'label_encoder':
-            self.output_data = self.output_exclude(self.output_data)
 
     @staticmethod
     # TODO: REFACTOR with new numpy stuff
@@ -162,5 +163,7 @@ if __name__ == '__main__':
     except:
         'die'
     self.load_chart(0)
+    self.chart_exclude(self.chart)
     self.generate_data(max_=True)
+    label_encoder(hit=('0', '1'))
     self.generate_data(max_='label_encoder')
