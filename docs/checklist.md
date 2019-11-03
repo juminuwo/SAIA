@@ -8,3 +8,5 @@ http://sox.sourceforge.net/
 https://towardsdatascience.com/recurrent-neural-networks-by-example-in-python-ffd204f99470
 
 Try a lookback tree estimator after on beat estimator for patterns. (Wanting a time-series-classification-like solution.)
+
+https://blog.keras.io/a-ten-minute-introduction-to-sequence-to-sequence-learning-in-keras.html
