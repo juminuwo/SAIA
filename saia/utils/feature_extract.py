@@ -1,7 +1,8 @@
 import numpy as np
 from pyAudioAnalysis import audioBasicIO
-from pyAudioAnalysis import audioFeatureExtraction as aF
+from pyAudioAnalysis import ShortTermFeatures
 from pydub import AudioSegment
+
 
 
 class music_features():
@@ -16,7 +17,7 @@ class music_features():
         duration = AudioSegment.from_wav(song).duration_seconds
         if offset:
             duration = duration + offset
-        [Fs, x] = audioBasicIO.readAudioFile(song)
+        [Fs, x] = audioBasicIO.read_audio_file(song)
 
         if self.bpm_overwrite:
             bpm = (self.bpm_overwrite * 4 * 60) / duration
@@ -36,7 +37,8 @@ class music_features():
         '''
         adds silence to the beginning if offset makes chart start before song
         '''
-        self.F, _ = aF.stFeatureExtraction(x, Fs, 0.050 * Fs, step * Fs)
+        x = audioBasicIO.stereo_to_mono(x)
+        self.F, _ = ShortTermFeatures.feature_extraction(x, Fs, 0.050 * Fs, step * Fs)
         if offset:
             if offset == 0:
                 pass
@@ -73,7 +75,10 @@ class music_features():
 
 if __name__ == '__main__':
     song = "shihen.wav"
+    song = "silence.wav"
     m_f = music_features(song, bpm_overwrite=410)
+    with open('silence.npy', 'wb') as f:
+        np.save(f, np.zeros([68, 5000]))
     m_f.generate_data()
     print(len(m_f.input_data))
     print(len(m_f.input_data[0]))

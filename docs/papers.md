@@ -1,0 +1,1 @@
+Conditional LSTM-GAN for Melody Generation from Lyrics: https://arxiv.org/abs/1908.05551

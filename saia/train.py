@@ -5,8 +5,8 @@ from glob import glob
 import numpy as np
 from natsort import natsorted
 
-from utils.feature_extract import music_features
-from utils.sm import sm
+from saia.utils.feature_extract import music_features
+from saia.utils.sm import sm
 
 
 class data():
@@ -143,11 +143,10 @@ def train_test_split(input_list, output_list, test, val=False):
 
 
 if __name__ == '__main__':
-    # sm_file = "/media/adrian/Main/Games/StepMania 5/test_packs/You're Streaming Forever/Block Control VIP/Block Control VIP.sm"
-    # song = '/media/adrian/Main/Games/StepMania 5/train_packs/Cirque du Zonda/Zaia - Apocynthion Drive/HertzDevil - Apocynthion Drive.ogg'
-    # song = 'shihen.ogg'
-    # d = data(sm_file, song)
-    # d.generate_data(d.s.n_charts - 1)
+    sm_file = "Songs/Otaku's Dream 8th Anime Mix/(Xanox) Kokuhaku/Kokuhaku.sm"
+    song = "Songs/Otaku's Dream 8th Anime Mix/(Xanox) Kokuhaku/Kokuhaku.ogg" 
+    d = data(sm_file, song)
+    d.generate_data(d.s.n_charts - 1)
 
     #songs_dir = '/media/adrian/Main/Games/StepMania 5/train_packs/'
     #d = dataset(songs_dir)

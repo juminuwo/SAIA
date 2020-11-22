@@ -45,3 +45,14 @@ saia/__pycache__/test.cpython-37.pyc
 saia/__pycache__/train.cpython-37.pyc
 saia/utils/__pycache__/feature_extract.cpython-37.pyc
 saia/utils/__pycache__/sm.cpython-37.pyc
+Songs/
+output.wav
+silence.mp3
+silence.mp3:Zone.Identifier
+saia/utils/__pycache__/feature_extract.cpython-38.pyc
+saia/utils/__pycache__/sm.cpython-38.pyc
+.vscode/settings.json
+silence.wav:Zone.Identifier
+silence.ogg:Zone.Identifier
+silence.ogg
+silence.wav
